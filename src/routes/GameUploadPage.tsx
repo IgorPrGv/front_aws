@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/routes/GameUploadPage.tsx  (ou src/pages/GameUploadPage.tsx)
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -58,19 +59,43 @@ export function GameUploadPage() {
       return;
     }
 
-    const fd = new FormData();
-    fd.append("title", title.trim());
-    fd.append("description", description.trim());
-    fd.append("genre", genre);
-    imageFiles.forEach((img) => fd.append("images", img));
-    if (gameFile) fd.append("file", gameFile);
-
     try {
       setSubmitting(true);
-      await api.post("/games", fd, { headers: { "Content-Type": "multipart/form-data" } });
+
+      // 1) Enviar imagens via /upload (uma a uma)
+      const imageKeys = await Promise.all(
+        imageFiles.map(async (img) => {
+          const fd = new FormData();
+          fd.append("file", img);
+          const { data } = await api.post("/upload", fd, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+          return data.key as string;
+        })
+      );
+
+      // 2) Enviar arquivo do jogo, se houver
+      let gameKey: string | null = null;
+      if (gameFile) {
+        const fd = new FormData();
+        fd.append("file", gameFile);
+        const { data } = await api.post("/upload", fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        gameKey = data.key as string;
+      }
+
+      // 3) Criar o game (JSON simples)
+      await api.post("/games", {
+        title: title.trim(),
+        description: description.trim(),
+        genre,
+        images: imageKeys,   // <- salve isso na coluna/JSON que preferir (array)
+        fileKey: gameKey,    // <- opcional
+      });
+
       alert("Jogo enviado com sucesso!");
       navigate("/");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const msg = err?.response?.data?.error?.message || "Falha ao enviar jogo";
       alert(msg);
@@ -78,6 +103,7 @@ export function GameUploadPage() {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
