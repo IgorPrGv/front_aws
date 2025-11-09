@@ -26,6 +26,7 @@ export function MainPage({ onGameClick }: MainPageProps) {
 
   async function load() {
     setLoading(true);
+    console.log(`🔄 Carregando jogos... (Página: ${page}, Busca: "${searchTerm}")`); // ⬅️ ADICIONADO
     try {
       const result = await apiService.listGames({ 
         search: searchTerm, 
@@ -34,8 +35,9 @@ export function MainPage({ onGameClick }: MainPageProps) {
       });
       setGames(result.items);
       setTotal(result.total);
+      console.log("✅ Jogos carregados:", result); // ⬅️ ADICIONADO
     } catch (error) {
-      console.error('Error loading games:', error);
+      console.error('❌ Erro ao carregar jogos:', error); // (Você já tinha este)
     } finally {
       setLoading(false);
     }

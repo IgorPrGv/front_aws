@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-refresh/only-export-components */
 // src/providers/AuthProvider.tsx
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
@@ -28,19 +29,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (username: string, password: string) => {
-    const { data } = await api.post("/auth/login", { username, password });
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    setUser(data.user);
-    return data.user;
+    try {
+      const { data } = await api.post("/auth/login", { username, password });
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+      console.log("✅ [Auth] Login successful:", data.user.username);
+      return data.user;
+    } catch (error: any) {
+      console.error("❌ [Auth] Falha no login."); 
+      throw error;
+    }
   };
 
   const signup = async (username: string, password: string, userType: "PLAYER" | "DEV") => {
-    const { data } = await api.post("/auth/register", { username, password, userType });
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    setUser(data.user);
-    return data.user;
+    try {
+      const { data } = await api.post("/auth/register", { username, password, userType });
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+      console.log("✅ [Auth] Signup successful:", data.user.username); 
+      return data.user;
+    } catch (error: any) {
+      console.error("❌ [Auth] Falha no cadastro."); 
+      throw error;
+    }
   };
 
   const logout = () => {

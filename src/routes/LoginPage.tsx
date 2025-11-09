@@ -35,17 +35,23 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    console.log("🔄 Tentando login com:", usernameLogin); // ⬅️ ADICIONADO
     try {
       const { data } = await api.post("/auth/login", {
         username: usernameLogin.trim(),
         password: passwordLogin,
       });
+      
+      console.log(" Login bem-sucedido:", data.user); // ⬅️ ADICIONADO
+
       // salva sessão
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       onLogin(data.user as User);
     } catch (err: any) {
-      setError(err?.response?.data?.error?.message || "Falha no login");
+      const errorMsg = err?.response?.data?.error?.message || "Falha no login";
+      console.error(" Falha no login:", errorMsg, err.response); // ⬅️ ADICIONADO
+      setError(errorMsg);
     }
   }
 
@@ -56,12 +62,19 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       const body: any = { username: username.trim(), password, userType };
       if (email.trim()) body.email = email.trim();
 
+      console.log("Tentando cadastro com:", body); // ⬅️ ADICIONADO
+
       const { data } = await api.post("/auth/register", body);
+
+      console.log("Cadastro bem-sucedido:", data.user); // ⬅️ ADICIONADO
+
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       onLogin(data.user as User);
     } catch (err: any) {
-      setError(err?.response?.data?.error?.message || "Falha no cadastro");
+      const errorMsg = err?.response?.data?.error?.message || "Falha no cadastro";
+      console.error(" Falha no cadastro:", errorMsg, err.response); // ⬅️ ADICIONADO
+      setError(errorMsg);
     }
   }
 
