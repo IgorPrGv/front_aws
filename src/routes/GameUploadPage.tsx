@@ -62,37 +62,27 @@ export function GameUploadPage() {
     try {
       setSubmitting(true);
 
-      // 1) Enviar imagens via /upload (uma a uma)
-      const imageKeys = await Promise.all(
-        imageFiles.map(async (img) => {
-          const fd = new FormData();
-          fd.append("file", img);
-          const { data } = await api.post("/upload", fd, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-          return data.key as string;
-        })
-      );
+      // 1) Montar um único FormData exatamente como o backend espera
+      const formData = new FormData();
+      formData.append("title", title.trim());
+      formData.append("description", description.trim());
+      formData.append("genre", genre);
 
-      // 2) Enviar arquivo do jogo, se houver
-      let gameKey: string | null = null;
+      // imagens (campo "images" — pode ter até 3)
+      imageFiles.forEach((img) => {
+        formData.append("images", img);
+      });
+
+      // arquivo do jogo (campo "file" — opcional)
       if (gameFile) {
-        const fd = new FormData();
-        fd.append("file", gameFile);
-        const { data } = await api.post("/upload", fd, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        gameKey = data.key as string;
+        formData.append("file", gameFile);
       }
 
-      // 3) Criar o game (JSON simples)
-      await api.post("/games", {
-        title: title.trim(),
-        description: description.trim(),
-        genre,
-        images: imageKeys,   // <- salve isso na coluna/JSON que preferir (array)
-        fileKey: gameKey,    // <- opcional
+      // 2) Enviar tudo em um POST /games (multipart/form-data)
+      await api.post("/games", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
+
 
       alert("Jogo enviado com sucesso!");
       navigate("/");

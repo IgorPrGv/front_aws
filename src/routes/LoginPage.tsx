@@ -35,14 +35,14 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    console.log("🔄 Tentando login com:", usernameLogin); // ⬅️ ADICIONADO
+    console.log("🔄 Tentando login com:", usernameLogin); 
     try {
       const { data } = await api.post("/auth/login", {
         username: usernameLogin.trim(),
         password: passwordLogin,
       });
       
-      console.log(" Login bem-sucedido:", data.user); // ⬅️ ADICIONADO
+      console.log(" Login bem-sucedido:", data.user); 
 
       // salva sessão
       localStorage.setItem("token", data.token);
@@ -50,7 +50,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       onLogin(data.user as User);
     } catch (err: any) {
       const errorMsg = err?.response?.data?.error?.message || "Falha no login";
-      console.error(" Falha no login:", errorMsg, err.response); // ⬅️ ADICIONADO
+      console.error(" Falha no login:", errorMsg, err.response); 
       setError(errorMsg);
     }
   }
