@@ -56,7 +56,7 @@ export function MainPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {games.map((game) => (
-            <Card key={game.id} className="overflow-hidden hover:shadow-lg transition-shadow dark:bg-gray-800 dark:border-gray-700">
+            <Card key={game.id} className="pt-0 overflow-hidden hover:shadow-lg transition-shadow dark:bg-gray-800 dark:border-gray-700">
               <div className="aspect-video w-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                 {game.images?.[0]?.imagePath ? (
                   <ImageWithFallback
