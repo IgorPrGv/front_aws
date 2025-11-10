@@ -46,6 +46,10 @@ export async function register(
   return data;
 }
 
+export async function deleteAccount(): Promise<void> {
+  await api.delete('/auth/me');
+}
+
 // ===================== GAMES =====================
 export async function listGames({ 
   search = '', 
@@ -236,6 +240,7 @@ export const apiService = {
   // Auth
   login,
   register,
+  deleteAccount,
   
   // Games
   listGames,

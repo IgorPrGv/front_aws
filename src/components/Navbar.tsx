@@ -1,14 +1,32 @@
 // src/components/Navbar.tsx
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Gamepad2, Upload, LogOut, Moon, Sun, Library } from "lucide-react";
+import { Gamepad2, Upload, LogOut, Moon, Sun, Library, Trash2, CircleUser } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../components/ui/dropdown-menu";
 import { useTheme } from "../providers/ThemeProvider";
 import { useAuth } from "../providers/AuthProvider";
 
 export function Navbar() {
   const { resolvedTheme, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, deleteAccount } = useAuth();
   const navigate = useNavigate();
+
+  const handleDeleteAccount = async () => {
+    const isConfirmed = window.confirm(
+      "Tem certeza que deseja excluir sua conta?\n\nEsta ação é permanente, apagará todos os seus dados e não pode ser desfeita."
+    );
+    
+    if (!isConfirmed) return;
+
+    try {
+      await deleteAccount(); 
+      alert("Conta excluída com sucesso.");
+      navigate('/login'); 
+    } catch (error) {
+      alert("Erro ao excluir a conta. Tente novamente.");
+      console.error("Falha ao excluir conta:", error);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors">
@@ -42,17 +60,42 @@ export function Navbar() {
             ) : null}
 
             {user ? (
-              <div className="flex items-center gap-2">
-                <div className="text-right">
-                  <p className="text-sm dark:text-white">{user.username}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {user.userType === "DEV" ? "Developer" : "Player"}
-                  </p>
-                </div>
-                <Button onClick={logout} variant="ghost" size="icon" aria-label="Sair">
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </div>
+              <DropdownMenu>
+                {/* O Botão que o usuário vê na Navbar (o "Trigger") */}
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="rounded-full">
+                    <CircleUser className="h-5 w-5" />
+                    <span className="sr-only">Abrir menu do usuário</span>
+                  </Button>
+                </DropdownMenuTrigger>
+
+                {/* O Conteúdo que aparece ao clicar */}
+                <DropdownMenuContent align="end">
+                  {/* O "Cabeçalho" do menu com as infos */}
+                  <DropdownMenuLabel>
+                    <div className="font-medium">{user.username}</div>
+                    <div className="text-xs text-muted-foreground font-normal">
+                      {user.userType === "DEV" ? "Developer" : "Player"}
+                    </div>
+                  </DropdownMenuLabel>
+                  
+                  <DropdownMenuSeparator />
+                  
+                  {/* As Ações */}
+                  <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sair</span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={handleDeleteAccount}
+                    className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Excluir Conta</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : null}
           </div>
         </div>

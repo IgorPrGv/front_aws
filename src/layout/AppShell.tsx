@@ -1,8 +1,8 @@
 
 // src/components/AppShell.tsx (versão simplificada: lê user do contexto)
 import * as React from "react";
-import { Navbar } from "./Navbar";
-import { Footer } from "./Footer";
+import { Navbar } from "../components/Navbar";
+import { Footer } from "../components/Footer";
 
 export function AppShell({ children, footer }: { children: React.ReactNode; footer?: React.ReactNode }) {
   return (

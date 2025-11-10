@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
-import { AppShell } from "./components/AppShell";
+import { AppShell } from "./layout/AppShell";
 import { AuthProvider, useAuth } from "./providers/AuthProvider";
 
 import { MainPage } from "./routes/MainPage";
