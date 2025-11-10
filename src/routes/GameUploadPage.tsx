@@ -141,14 +141,14 @@ export function GameUploadPage() {
                 value={genre}
                 onChange={(e) => setGenre(e.target.value)}
               >
-                <option>Action</option>
-                <option>Adventure</option>
+                <option>Ação</option>
+                <option>Aventura</option>
                 <option>RPG</option>
-                <option>Strategy</option>
+                <option>Estratégia</option>
                 <option>Puzzle</option>
-                <option>Racing</option>
-                <option>Sports</option>
-                <option>Simulation</option>
+                <option>Corrida</option>
+                <option>Esportes</option>
+                <option>Simulação</option>
               </select>
             </div>
 
@@ -185,7 +185,7 @@ export function GameUploadPage() {
 
             {/* Arquivo do jogo  */}
             <div className="space-y-2">
-              <Label htmlFor="gamefile">Arquivo do jogo (opcional)</Label>
+              <Label htmlFor="gamefile">Arquivo do jogo *</Label>
               <Input
                 id="gamefile"
                 type="file"

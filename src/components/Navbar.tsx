@@ -6,7 +6,7 @@ import { useTheme } from "../providers/ThemeProvider";
 import { useAuth } from "../providers/AuthProvider";
 
 export function Navbar() {
-  const { theme, toggleTheme } = useTheme();
+  const { resolvedTheme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -18,26 +18,26 @@ export function Navbar() {
             <div className="bg-purple-600 p-2 rounded-lg">
               <Gamepad2 className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl dark:text-white">Game Portal</span>
+            <span className="text-xl dark:text-white">Steam da UFC</span>
           </button>
           
           <div className="flex items-center gap-4">
             <Button onClick={toggleTheme} variant="outline" size="icon" aria-label="Alternar tema">
-              {theme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+              {resolvedTheme === "light" ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             </Button>
 
             {user?.userType === "DEV" ? (
               <>
                 <Button onClick={() => navigate("/my-games")} variant="outline" className="gap-2">
-                  <Library className="w-4 h-4" /> My Games
+                  <Library className="w-4 h-4" /> Meus Jogos
                 </Button>
                 <Button onClick={() => navigate("/upload")} variant="outline" className="gap-2">
-                  <Upload className="w-4 h-4" /> Upload Game
+                  <Upload className="w-4 h-4" /> Criar Jogo
                 </Button>
               </>
             ) : user?.userType === "PLAYER" ? (
               <Button onClick={() => navigate("/downloads")} variant="outline" className="gap-2">
-                <Library className="w-4 h-4" /> Downloads
+                <Library className="w-4 h-4" /> Biblioteca
               </Button>
             ) : null}
 
@@ -53,12 +53,7 @@ export function Navbar() {
                   <LogOut className="w-4 h-4" />
                 </Button>
               </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" onClick={() => navigate("/login")}>Entrar</Button>
-                <Button onClick={() => navigate("/login")}>Criar conta</Button>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

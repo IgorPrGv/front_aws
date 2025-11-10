@@ -35,9 +35,9 @@ export function MainPage() {
       });
       setGames(result.items);
       setTotal(result.total);
-      console.log("Jogos carregados:", result); // ⬅️ ADICIONADO
+      console.log("Jogos carregados:", result); 
     } catch (error) {
-      console.error('Erro ao carregar jogos:', error); // (Você já tinha este)
+      console.error('Erro ao carregar jogos:', error); 
     } finally {
       setLoading(false);
     }
@@ -71,8 +71,8 @@ export function MainPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="mb-2 dark:text-white">Available Games</h1>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">Browse and download your favorite games</p>
+        <h1 className="mb-2 dark:text-white">Jogos disponíveis</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">Veja e baixe seus jogos favoritos!</p>
 
         <form onSubmit={onSearch} className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -90,7 +90,7 @@ export function MainPage() {
         <p className="text-gray-500 dark:text-gray-400">Carregando…</p>
       ) : games.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 dark:text-gray-400">No games found matching your search.</p>
+          <p className="text-gray-500 dark:text-gray-400">Nenhum jogo encontrado baseado na sua pesquisa</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -129,7 +129,7 @@ export function MainPage() {
 
                 <div className="flex gap-2">
                   <Button onClick={() => navigate(`/game/${game.id}`)} className="flex-1">
-                    View Details
+                    Detalhes
                   </Button>
 
                   {(!user || user.userType === 'PLAYER') && (

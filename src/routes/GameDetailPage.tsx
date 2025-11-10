@@ -42,10 +42,10 @@ export function GameDetailPage() {
   async function loadReviews() { 
     if (!gameId) return;
     try {
-      console.log("🔄 Carregando reviews...");
+      console.log("Carregando reviews...");
       const reviewsData = await apiService.getGameReviews(gameId, 50); 
       setReviews(reviewsData || []);
-      console.log("✅ Reviews carregados:", reviewsData.length);
+      console.log("Reviews carregados:", reviewsData.length);
     } catch (error) {
       console.error("Erro ao carregar reviews:", error);
     }
@@ -58,14 +58,14 @@ export function GameDetailPage() {
       return;
     }
     try {
-      console.log("🔄 Buscando status de rating do usuário...");
+      console.log("Buscando status de rating do usuário...");
       const data = await apiService.getUserRating(gameId);
 
-      console.log("✅ Status de rating recebido:", data.userRating);
+      console.log("Status de rating recebido:", data.userRating);
       setUserLiked(data.userRating === "LIKE");
       setUserDisliked(data.userRating === "DISLIKE");
     } catch (error) {
-      console.error("❌ Erro ao buscar rating do usuário:", error);
+      console.error("Erro ao buscar rating do usuário:", error);
     }
   }
 
@@ -110,7 +110,7 @@ export function GameDetailPage() {
   }
   async function handleSaveToLibrary() {
     if (!user) return alert("Faça login para salvar na biblioteca.");
-    if (user.userType !== "PLAYER") return alert("Apenas usuários PLAYER podem salvar na biblioteca.");
+    if (user.userType !== "PLAYER") return alert("Apenas usuários Jogadores podem salvar um jogo.");
     if (!gameId) return;
     await apiService.addToLibrary(gameId);
     alert("Jogo salvo na sua biblioteca!");
@@ -193,7 +193,7 @@ export function GameDetailPage() {
 
           {/* Comentários */}
           <Card className="dark:bg-gray-800 dark:border-gray-700">
-            <CardHeader><CardTitle className="dark:text-white">Reviews & Comentários</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="dark:text-white">Comentários</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <form onSubmit={handleSubmitComment} className="space-y-4">
                 <Textarea
@@ -258,7 +258,7 @@ export function GameDetailPage() {
               )}
               {(!user || user.userType !== "PLAYER") && (
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Faça login como <strong>USER</strong> para salvar este jogo na sua biblioteca.
+                  Faça login como <strong>Jogador</strong> para salvar este jogo na sua biblioteca.
                 </p>
               )}
               <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">

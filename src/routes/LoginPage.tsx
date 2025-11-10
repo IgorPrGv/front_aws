@@ -62,18 +62,18 @@ export function LoginPage({ onLogin }: LoginPageProps) {
       const body: any = { username: username.trim(), password, userType };
       if (email.trim()) body.email = email.trim();
 
-      console.log("Tentando cadastro com:", body); // ⬅️ ADICIONADO
+      console.log("Tentando cadastro com:", body); 
 
       const { data } = await api.post("/auth/register", body);
 
-      console.log("Cadastro bem-sucedido:", data.user); // ⬅️ ADICIONADO
+      console.log("Cadastro bem-sucedido:", data.user); 
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       onLogin(data.user as User);
     } catch (err: any) {
       const errorMsg = err?.response?.data?.error?.message || "Falha no cadastro";
-      console.error(" Falha no cadastro:", errorMsg, err.response); // ⬅️ ADICIONADO
+      console.error(" Falha no cadastro:", errorMsg, err.response); 
       setError(errorMsg);
     }
   }
@@ -87,7 +87,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <Gamepad2 className="w-8 h-8 text-white" />
             </div>
           </div>
-          <CardTitle className="dark:text-white">Game Portal</CardTitle>
+          <CardTitle className="dark:text-white">Steam da UFC</CardTitle>
           <CardDescription className="dark:text-gray-400">
             Entre ou crie sua conta para continuar
           </CardDescription>
@@ -103,7 +103,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-username">Username</Label>
+                  <Label htmlFor="login-username">Nome de Usuário</Label>
                   <Input
                     id="login-username"
                     placeholder="Seu username"
@@ -132,7 +132,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-username">Username</Label>
+                  <Label htmlFor="signup-username">Nome de Usuário</Label>
                   <Input
                     id="signup-username"
                     placeholder="Escolha um username"
@@ -142,7 +142,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email (opcional)</Label>
+                  <Label htmlFor="signup-email">Email</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -170,8 +170,8 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     value={userType}
                     onChange={(e) => setUserType(e.target.value as "PLAYER" | "DEV")}
                   >
-                    <option value="PLAYER">Player</option>
-                    <option value="DEV">Developer</option>
+                    <option value="PLAYER">Jogador</option>
+                    <option value="DEV">Desenvolvedor</option>
                   </select>
                 </div>
                 {error && tab === "signup" && <p className="text-red-500 text-sm">{error}</p>}
