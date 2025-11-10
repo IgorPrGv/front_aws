@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/routes/DownloadsPage.tsx
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 import { apiService } from "../lib/api.service";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -12,6 +12,7 @@ export function DownloadsPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   async function load() {
     setLoading(true);
@@ -76,7 +77,7 @@ export function DownloadsPage() {
                 <div className="flex gap-2">
                   <Button 
                     size="sm" 
-                    onClick={() => (location.href = `/game/${r.gameId}`)}
+                    onClick={() => navigate(`/game/${r.gameId}`)}
                   >
                     Ver
                   </Button>

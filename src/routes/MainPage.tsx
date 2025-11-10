@@ -10,12 +10,12 @@ import { useAuth } from "../providers/AuthProvider";
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { apiService } from '../lib/api.service';
 import type { Game } from '../types/models';
+import { useNavigate } from 'react-router-dom';
 
-type MainPageProps = {
-  onGameClick: (gameId: string) => void;
-};
 
-export function MainPage({ onGameClick }: MainPageProps) {
+
+export function MainPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [games, setGames] = useState<Game[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,7 +26,7 @@ export function MainPage({ onGameClick }: MainPageProps) {
 
   async function load() {
     setLoading(true);
-    console.log(`🔄 Carregando jogos... (Página: ${page}, Busca: "${searchTerm}")`); // ⬅️ ADICIONADO
+    console.log(`Carregando jogos... (Página: ${page}, Busca: "${searchTerm}")`); // ⬅️ ADICIONADO
     try {
       const result = await apiService.listGames({ 
         search: searchTerm, 
@@ -35,9 +35,9 @@ export function MainPage({ onGameClick }: MainPageProps) {
       });
       setGames(result.items);
       setTotal(result.total);
-      console.log("✅ Jogos carregados:", result); // ⬅️ ADICIONADO
+      console.log("Jogos carregados:", result); // ⬅️ ADICIONADO
     } catch (error) {
-      console.error('❌ Erro ao carregar jogos:', error); // (Você já tinha este)
+      console.error('Erro ao carregar jogos:', error); // (Você já tinha este)
     } finally {
       setLoading(false);
     }
@@ -128,7 +128,7 @@ export function MainPage({ onGameClick }: MainPageProps) {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button onClick={() => onGameClick(game.id)} className="flex-1">
+                  <Button onClick={() => navigate(`/game/${game.id}`)} className="flex-1">
                     View Details
                   </Button>
 

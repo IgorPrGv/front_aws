@@ -1,38 +1,16 @@
 // src/pages/GameDetailPage.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Textarea } from "../components/ui/textarea";
 import { Badge } from "../components/ui/badge";
 import { ThumbsUp, ThumbsDown, Download, ArrowLeft } from "lucide-react";
-import { api } from "../lib/axios";
+import { apiService } from "../lib/api.service";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageModal } from "../components/ImageModal";
 import { useAuth } from "../providers/AuthProvider";
-
-type GameImage = { imagePath: string; orderIndex: number };
-type Game = {
-  id: string;
-  title: string;
-  description: string;
-  genre: string;
-  images: GameImage[];
-  likes: number;
-  dislikes: number;
-  createdAt: string;
-  developerId: string;
-  filePath?: string | null; 
-};
-type Review = {
-  id: string;
-  userId: string;
-  comment: string;
-  createdAt: string;
-  author?: { id: string; username: string }; 
-};
-
-
-const API = import.meta.env.VITE_API_URL;
+import type { Game, Review } from "../types/models";
 
 export function GameDetailPage() {
   const { id: gameId } = useParams<{ id: string }>();
@@ -45,69 +23,110 @@ export function GameDetailPage() {
   const [userLiked, setUserLiked] = useState(false);
   const [userDisliked, setUserDisliked] = useState(false);
 
-  const likeKey = useMemo(() => `rating_${gameId ?? ""}`, [gameId]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+  const [selectedImageAlt, setSelectedImageAlt] = useState("");
+
 
   async function loadGame() {
     if (!gameId) return;
-    const { data } = await api.get(`/games/${gameId}`);
-    setGame(data);
+    try {
+      console.log("Carregando dados do jogo...");
+      const gameData = await apiService.getGameById(gameId);
+      setGame(gameData);
+      console.log("Jogo carregado:", gameData);
+    } catch (error) {
+      console.error("Erro ao carregar jogo:", error);
+    }
   }
-  async function loadReviews(p = 1) {
+  async function loadReviews() { 
     if (!gameId) return;
-    const { data } = await api.get(`/games/${gameId}/reviews`, { params: { page: p, pageSize: 50 } });
-    setReviews(data.items || []);
+    try {
+      console.log("🔄 Carregando reviews...");
+      const reviewsData = await apiService.getGameReviews(gameId, 50); 
+      setReviews(reviewsData || []);
+      console.log("✅ Reviews carregados:", reviewsData.length);
+    } catch (error) {
+      console.error("Erro ao carregar reviews:", error);
+    }
   }
-  function loadLocalRating() {
-    const status = localStorage.getItem(likeKey);
-    setUserLiked(status === "LIKE");
-    setUserDisliked(status === "DISLIKE");
+
+  async function loadUserRating() {
+    if (!user || !gameId) {
+      setUserLiked(false);
+      setUserDisliked(false);
+      return;
+    }
+    try {
+      console.log("🔄 Buscando status de rating do usuário...");
+      const data = await apiService.getUserRating(gameId);
+
+      console.log("✅ Status de rating recebido:", data.userRating);
+      setUserLiked(data.userRating === "LIKE");
+      setUserDisliked(data.userRating === "DISLIKE");
+    } catch (error) {
+      console.error("❌ Erro ao buscar rating do usuário:", error);
+    }
   }
 
   useEffect(() => {
     loadGame();
     loadReviews();
-    loadLocalRating();
+    loadUserRating();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameId]);
+  }, [gameId, user]);
 
   async function handleLike() {
     if (!gameId) return;
-    const { data } = await api.post(`/games/${gameId}/like`);
+    const data = await apiService.likeGame(gameId);
+
     setGame(g => (g ? { ...g, likes: data.likes, dislikes: data.dislikes } : g));
-    localStorage.setItem(likeKey, "LIKE");
-    setUserLiked(true);
-    setUserDisliked(false);
+
+    setUserLiked(data.userRating === 'LIKE');
+    setUserDisliked(data.userRating === 'DISLIKE');
   }
   async function handleDislike() {
     if (!gameId) return;
-    const { data } = await api.post(`/games/${gameId}/dislike`);
+    const data = await apiService.dislikeGame(gameId);
     setGame(g => (g ? { ...g, likes: data.likes, dislikes: data.dislikes } : g));
-    localStorage.setItem(likeKey, "DISLIKE");
-    setUserLiked(false);
-    setUserDisliked(true);
+
+    setUserLiked(data.userRating === 'LIKE');
+    setUserDisliked(data.userRating === 'DISLIKE');
   }
   async function handleResetRating() {
     if (!gameId) return;
-    const { data } = await api.delete(`/games/${gameId}/rating`);
+    const data = await apiService.removeRating(gameId);
     setGame(g => (g ? { ...g, likes: data.likes, dislikes: data.dislikes } : g));
-    localStorage.removeItem(likeKey);
-    setUserLiked(false);
-    setUserDisliked(false);
+
+    setUserLiked(data.userRating === 'LIKE'); 
+    setUserDisliked(data.userRating === 'DISLIKE'); 
   }
   async function handleSubmitComment(e: React.FormEvent) {
     e.preventDefault();
     if (!newComment.trim() || !gameId) return;
-    const { data } = await api.post(`/games/${gameId}/reviews`, { comment: newComment.trim() });
-    setReviews(prev => [data, ...prev]);
+    const newReview = await apiService.createReview(gameId, newComment.trim());
+    setReviews(prev => [newReview, ...prev]);
     setNewComment("");
   }
   async function handleSaveToLibrary() {
     if (!user) return alert("Faça login para salvar na biblioteca.");
     if (user.userType !== "PLAYER") return alert("Apenas usuários PLAYER podem salvar na biblioteca.");
     if (!gameId) return;
-    await api.post("/downloads", { gameId });
+    await apiService.addToLibrary(gameId);
     alert("Jogo salvo na sua biblioteca!");
   }
+
+  const openImageModal = (src: string, alt: string) => {
+    setSelectedImage(src);
+    setSelectedImageAlt(alt);
+    setIsModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setIsModalOpen(false);
+    setSelectedImage("");
+    setSelectedImageAlt("");
+  };
 
   if (!game) {
     return (
@@ -144,9 +163,11 @@ export function GameDetailPage() {
           {/* Imagens */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {(game.images || []).slice(0, 3).map((image) => (
-              <div key={image.orderIndex} className="aspect-video overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700">
+              <div key={image.orderIndex} className="aspect-video overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 cursor-pointer" 
+              onClick={() => openImageModal(image.imagePath, `${game.title} screenshot ${image.orderIndex + 1}`)}
+              >
                 <ImageWithFallback
-                  src={`${API}${image.imagePath}`}
+                  src={image.imagePath}
                   alt={`${game.title} screenshot ${image.orderIndex + 1}`}
                   className="w-full h-full object-cover"
                 />
@@ -180,6 +201,7 @@ export function GameDetailPage() {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   rows={3}
+                  disabled={!user}
                 />
                 <Button type="submit">Postar comentário</Button>
               </form>
@@ -189,7 +211,7 @@ export function GameDetailPage() {
                   <p className="text-gray-500 dark:text-gray-400 text-center py-4">Sem comentários ainda. Seja o primeiro!</p>
                 ) : (
                   reviews.map((r) => (
-                    <div key={r.id} className="border-b dark:border-gray-700 pb-4 last:border-b-0">
+                    <div key={r.reviewId} className="border-b dark:border-gray-700 pb-4 last:border-b-0">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-gray-900 dark:text-white">
                           {r.author?.username ?? `Usuário ${r.userId.slice(0, 6)}`}
@@ -216,7 +238,7 @@ export function GameDetailPage() {
               <CardContent className="space-y-3">
                 <p className="text-sm dark:text-gray-300 break-all">{fileName}</p>
                 
-                <a href={`${API}${game.filePath}`} download>
+                <a href={game.filePath} download>
                   <Button className="w-full gap-2">
                     <Download className="w-4 h-4" />
                     Baixar arquivo
@@ -261,6 +283,12 @@ export function GameDetailPage() {
           </Card>
         </div>
       </div>
+      <ImageModal
+        isOpen={isModalOpen}
+        src={selectedImage}
+        alt={selectedImageAlt}
+        onClose={closeImageModal}
+      />
     </div>
   );
 }

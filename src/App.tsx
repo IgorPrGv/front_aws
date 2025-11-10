@@ -30,7 +30,7 @@ export default function App() {
           />
 
           <Route element={<RequireAuth />}>
-            <Route path="/" element={<MainPage onGameClick={(id: string) => (location.href = `/game/${id}`)} />} />
+            <Route path="/" element={<MainPage />} />
             <Route path="/game/:id" element={<GameDetailPage />} />
             <Route path="/upload" element={<GameUploadPage />} />
             <Route path="/downloads" element={<DownloadsPage />} />

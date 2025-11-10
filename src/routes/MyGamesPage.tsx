@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/routes/MyGamesPage.tsx
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
 import { apiService } from "../lib/api.service";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
-import { BarChart2 } from "lucide-react";
+import { BarChart2, Trash2 } from "lucide-react";
 import type { Game } from "../types/models";
 
 export function MyGamesPage() {
@@ -13,6 +14,7 @@ export function MyGamesPage() {
   const [items, setItems] = useState<Game[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   async function load() {
     setLoading(true);
@@ -36,6 +38,27 @@ export function MyGamesPage() {
   if (authLoading) {
     return <p className="text-gray-500 dark:text-gray-400 px-4 py-8">Carregando…</p>;
   }
+
+  const handleDeleteGame = async (gameId: string, gameTitle: string) => {
+    // Adicionar confirmação
+    const isConfirmed = window.confirm(
+      `Tem a certeza que quer apagar permanentemente o jogo "${gameTitle}"?\n\nEsta ação não pode ser desfeita e irá removê-lo da biblioteca de todos os usuários.`
+    );
+
+    if (!isConfirmed) return;
+
+    try {
+      setLoading(true); // (Opcional) Mostrar um feedback de loading
+      await apiService.deleteGame(gameId);
+      // Atualizar o estado local para remover o card
+      setItems((prevItems) => prevItems.filter((item) => item.id !== gameId));
+      setTotal((prevTotal) => prevTotal - 1);
+    } catch (error: any) {
+      alert(error?.response?.data?.error?.message || 'Erro ao apagar o jogo');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!user) return <Navigate to="/login" replace />;
   if (user.userType !== "DEV") return <Navigate to="/" replace />;
@@ -78,9 +101,16 @@ export function MyGamesPage() {
                     variant="outline"
                     size="sm"
                     className="gap-2"
-                    onClick={() => (location.href = `/game/${g.id}`)}
+                    onClick={() => navigate(`/game/${g.id}`)}
                   >
                     <BarChart2 className="w-4 h-4" /> Ver
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleDeleteGame(g.id, g.title)}
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </CardContent>
