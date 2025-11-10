@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 // src/routes/GameUploadPage.tsx  (ou src/pages/GameUploadPage.tsx)
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -9,21 +8,25 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Upload as UploadIcon, X } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
-import { api } from "../lib/axios";
+import { useGameUpload } from "../hooks/gameupload.hooks";
 
 export function GameUploadPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [genre, setGenre] = useState("Action");
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [gameFile, setGameFile] = useState<File | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const {
+    title, setTitle,
+    description, setDescription,
+    genre, setGenre,
+    imageFiles,
+    imagePreviews,
+    setGameFile,
+    submitting,
+    handleImageUpload,
+    removeImage,
+    handleSubmit,
+  } = useGameUpload();
 
-  // 🔐 Apenas DEV
   if (!user) {
     navigate("/login");
     return null;
@@ -32,68 +35,6 @@ export function GameUploadPage() {
     navigate("/");
     return null;
   }
-
-  
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const total = imageFiles.length + files.length;
-    if (total > 3) {
-      alert("Você pode enviar no máximo 3 imagens");
-      return;
-    }
-    const newImageFiles = [...imageFiles, ...files].slice(0, 3);
-    setImageFiles(newImageFiles);
-    setImagePreviews(newImageFiles.map((f) => URL.createObjectURL(f)));
-  };
-
-  const removeImage = (index: number) => {
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim() || !description.trim() || imageFiles.length === 0) {
-      alert("Preencha título, descrição e envie pelo menos uma imagem");
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-
-      // 1) Montar um único FormData exatamente como o backend espera
-      const formData = new FormData();
-      formData.append("title", title.trim());
-      formData.append("description", description.trim());
-      formData.append("genre", genre);
-
-      // imagens (campo "images" — pode ter até 3)
-      imageFiles.forEach((img) => {
-        formData.append("images", img);
-      });
-
-      // arquivo do jogo (campo "file" — opcional)
-      if (gameFile) {
-        formData.append("file", gameFile);
-      }
-
-      // 2) Enviar tudo em um POST /games (multipart/form-data)
-      await api.post("/games", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-
-      alert("Jogo enviado com sucesso!");
-      navigate("/");
-    } catch (err: any) {
-      const msg = err?.response?.data?.error?.message || "Falha ao enviar jogo";
-      alert(msg);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

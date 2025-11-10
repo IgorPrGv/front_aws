@@ -12,7 +12,6 @@ function getS3Url(key: string | null | undefined): string | null {
   return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 }
 
-// Transforma resposta do backend para formato esperado pelo frontend
 function transformGame(game: any): Game {
   return {
     ...game,

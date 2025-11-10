@@ -1,82 +1,39 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/LoginPage.tsx
-import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Gamepad2 } from "lucide-react";
-import { api } from "../lib/axios";
-// ⬇️ usa seu tipo do projeto (ajuste o caminho se diferente)
 import type { User } from "../types/models";
+import { useAuthForm } from "../hooks/user.hooks";
 
 type LoginPageProps = {
   onLogin: (user: User) => void;
 };
 
 export function LoginPage({ onLogin }: LoginPageProps) {
-  const [tab, setTab] = useState<"login" | "signup">("login");
 
-  // Login (API usa username + password)
-  const [usernameLogin, setUsernameLogin] = useState("");
-  const [passwordLogin, setPasswordLogin] = useState("");
-
-  // Signup
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  // email é opcional no backend — mantenho no formulário se você quiser guardá-lo
-  const [email, setEmail] = useState("");
-  // API espera "PLAYER" | "DEV"
-  const [userType, setUserType] = useState<"PLAYER" | "DEV">("PLAYER");
-
-  const [error, setError] = useState("");
-
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    console.log("🔄 Tentando login com:", usernameLogin); 
-    try {
-      const { data } = await api.post("/auth/login", {
-        username: usernameLogin.trim(),
-        password: passwordLogin,
-      });
-      
-      console.log(" Login bem-sucedido:", data.user); 
-
-      // salva sessão
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      onLogin(data.user as User);
-    } catch (err: any) {
-      const errorMsg = err?.response?.data?.error?.message || "Falha no login";
-      console.error(" Falha no login:", errorMsg, err.response); 
-      setError(errorMsg);
-    }
-  }
-
-  async function handleSignup(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    try {
-      const body: any = { username: username.trim(), password, userType };
-      if (email.trim()) body.email = email.trim();
-
-      console.log("Tentando cadastro com:", body); 
-
-      const { data } = await api.post("/auth/register", body);
-
-      console.log("Cadastro bem-sucedido:", data.user); 
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      onLogin(data.user as User);
-    } catch (err: any) {
-      const errorMsg = err?.response?.data?.error?.message || "Falha no cadastro";
-      console.error(" Falha no cadastro:", errorMsg, err.response); 
-      setError(errorMsg);
-    }
-  }
+  const {
+    tab,
+    setTab,
+    error,
+    usernameLogin,
+    setUsernameLogin,
+    passwordLogin,
+    setPasswordLogin,
+    onLoginSubmit,
+    username,
+    setUsername,
+    password,
+    setPassword,
+    email,
+    setEmail,
+    userType,
+    setUserType,
+    onSignupSubmit,
+  } = useAuthForm({ onLogin });
 
   return (
     <div className="min-h-screen flex items-center justify-center w-full bg-linear-to-br from-purple-600 to-blue-600 dark:from-purple-900 dark:to-blue-900">
@@ -101,7 +58,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
             {/* LOGIN */}
             <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={onLoginSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-username">Nome de Usuário</Label>
                   <Input
@@ -130,7 +87,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
             {/* SIGNUP */}
             <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
+              <form onSubmit={onSignupSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-username">Nome de Usuário</Label>
                   <Input

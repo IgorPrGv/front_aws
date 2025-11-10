@@ -1,120 +1,40 @@
 // src/pages/GameDetailPage.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Textarea } from "../components/ui/textarea";
 import { Badge } from "../components/ui/badge";
 import { ThumbsUp, ThumbsDown, Download, ArrowLeft } from "lucide-react";
-import { apiService } from "../lib/api.service";
-import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { ImageWithFallback } from "../components/ImageWithFallback";
 import { ImageModal } from "../components/ImageModal";
 import { useAuth } from "../providers/AuthProvider";
-import type { Game, Review } from "../types/models";
+import { useGameDetail } from "../hooks/gamedetail.hooks";
+import { useGameLibrary } from "../hooks/gamelibrary.hooks";
 
 export function GameDetailPage() {
   const { id: gameId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [game, setGame] = useState<Game | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [newComment, setNewComment] = useState("");
-  const [userLiked, setUserLiked] = useState(false);
-  const [userDisliked, setUserDisliked] = useState(false);
+  const {
+    game,
+    reviews,
+    newComment,
+    setNewComment,
+    userLiked,
+    userDisliked,
+    handleLike,
+    handleDislike,
+    handleResetRating,
+    handleSubmitComment,
+  } = useGameDetail(gameId, user);
+
+  const { addToLibrary } = useGameLibrary(); 
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [selectedImageAlt, setSelectedImageAlt] = useState("");
-
-
-  async function loadGame() {
-    if (!gameId) return;
-    try {
-      console.log("Carregando dados do jogo...");
-      const gameData = await apiService.getGameById(gameId);
-      setGame(gameData);
-      console.log("Jogo carregado:", gameData);
-    } catch (error) {
-      console.error("Erro ao carregar jogo:", error);
-    }
-  }
-  async function loadReviews() { 
-    if (!gameId) return;
-    try {
-      console.log("Carregando reviews...");
-      const reviewsData = await apiService.getGameReviews(gameId, 50); 
-      setReviews(reviewsData || []);
-      console.log("Reviews carregados:", reviewsData.length);
-    } catch (error) {
-      console.error("Erro ao carregar reviews:", error);
-    }
-  }
-
-  async function loadUserRating() {
-    if (!user || !gameId) {
-      setUserLiked(false);
-      setUserDisliked(false);
-      return;
-    }
-    try {
-      console.log("Buscando status de rating do usuário...");
-      const data = await apiService.getUserRating(gameId);
-
-      console.log("Status de rating recebido:", data.userRating);
-      setUserLiked(data.userRating === "LIKE");
-      setUserDisliked(data.userRating === "DISLIKE");
-    } catch (error) {
-      console.error("Erro ao buscar rating do usuário:", error);
-    }
-  }
-
-  useEffect(() => {
-    loadGame();
-    loadReviews();
-    loadUserRating();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameId, user]);
-
-  async function handleLike() {
-    if (!gameId) return;
-    const data = await apiService.likeGame(gameId);
-
-    setGame(g => (g ? { ...g, likes: data.likes, dislikes: data.dislikes } : g));
-
-    setUserLiked(data.userRating === 'LIKE');
-    setUserDisliked(data.userRating === 'DISLIKE');
-  }
-  async function handleDislike() {
-    if (!gameId) return;
-    const data = await apiService.dislikeGame(gameId);
-    setGame(g => (g ? { ...g, likes: data.likes, dislikes: data.dislikes } : g));
-
-    setUserLiked(data.userRating === 'LIKE');
-    setUserDisliked(data.userRating === 'DISLIKE');
-  }
-  async function handleResetRating() {
-    if (!gameId) return;
-    const data = await apiService.removeRating(gameId);
-    setGame(g => (g ? { ...g, likes: data.likes, dislikes: data.dislikes } : g));
-
-    setUserLiked(data.userRating === 'LIKE'); 
-    setUserDisliked(data.userRating === 'DISLIKE'); 
-  }
-  async function handleSubmitComment(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newComment.trim() || !gameId) return;
-    const newReview = await apiService.createReview(gameId, newComment.trim());
-    setReviews(prev => [newReview, ...prev]);
-    setNewComment("");
-  }
-  async function handleSaveToLibrary() {
-    if (!user) return alert("Faça login para salvar na biblioteca.");
-    if (user.userType !== "PLAYER") return alert("Apenas usuários Jogadores podem salvar um jogo.");
-    if (!gameId) return;
-    await apiService.addToLibrary(gameId);
-    alert("Jogo salvo na sua biblioteca!");
-  }
 
   const openImageModal = (src: string, alt: string) => {
     setSelectedImage(src);
@@ -252,7 +172,7 @@ export function GameDetailPage() {
             <CardHeader><CardTitle className="dark:text-white">Biblioteca</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               {user?.userType === "PLAYER" && (
-                <Button onClick={handleSaveToLibrary} className="w-full gap-2">
+                <Button onClick={() => addToLibrary(game.id)} className="w-full gap-2">
                   <Download className="w-4 h-4" /> Salvar na minha biblioteca
                 </Button>
               )}

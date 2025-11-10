@@ -17,19 +17,18 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor de RESPOSTA (roda DEPOIS de receber)
 api.interceptors.response.use(
   (response) => {
 
     console.log(
-      `✅ [API Response] ${response.config.method?.toUpperCase()} ${response.config.url}`,
+      `[API Response] ${response.config.method?.toUpperCase()} ${response.config.url}`,
       response.data
     );
     return response;
   },
   (error) => {
     console.error(
-      `❌ [API Error] ${error.config.method?.toUpperCase()} ${error.config.url}`,
+      `[API Error] ${error.config.method?.toUpperCase()} ${error.config.url}`,
       error.response?.data || error.message
     );
     return Promise.reject(error);

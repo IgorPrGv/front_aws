@@ -1,46 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/routes/DownloadsPage.tsx
-import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
-import { apiService } from "../lib/api.service";
+import { useMyDownloads } from "../hooks/gamelibrary.hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Trash2 } from "lucide-react";
 
 export function DownloadsPage() {
-  const { user } = useAuth();
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  async function load() {
-    setLoading(true);
-    try {
-      const { items } = await apiService.getMyDownloads(1, 50);
-      setItems(items);
-    } catch (error) {
-      console.error('Error loading downloads:', error);
-    } finally {
-      setLoading(false);
-    }
+  const { items, loading, removeFromLibrary } = useMyDownloads();
+
+  if (authLoading) {
+     return <p className="text-gray-500 dark:text-gray-400 px-4 py-8">Carregando…</p>;
   }
-
-  useEffect(() => {
-    if (user?.userType === "PLAYER") {
-      load();
-    }
-  }, [user]);
-
-  const handleRemove = async (downloadId: string) => {
-    try {
-      await apiService.removeFromLibrary(downloadId);
-      setItems((prev) => prev.filter((r) => r.id !== downloadId));
-    } catch (error: any) {
-      alert(error?.response?.data?.error?.message || 'Erro ao remover');
-    }
-  };
-
   if (!user) return <Navigate to="/login" replace />;
   if (user.userType !== "PLAYER") return <Navigate to="/" replace />;
 
@@ -85,7 +59,7 @@ export function DownloadsPage() {
                     size="sm"
                     variant="destructive"
                     className="gap-2"
-                    onClick={() => handleRemove(r.id)}
+                    onClick={() => removeFromLibrary(r.id)}
                   >
                     <Trash2 className="w-4 h-4" />
                     Remover

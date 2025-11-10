@@ -1,64 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/routes/MyGamesPage.tsx
-import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../providers/AuthProvider";
-import { apiService } from "../lib/api.service";
+import { useMyGames } from "../hooks/mygames.hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { BarChart2, Trash2 } from "lucide-react";
-import type { Game } from "../types/models";
+
 
 export function MyGamesPage() {
   const { user, loading: authLoading } = useAuth();
-  const [items, setItems] = useState<Game[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  async function load() {
-    setLoading(true);
-    try {
-      const data = await apiService.getMyGames(1, 50);
-      setItems(data.items);
-      setTotal(data.total);
-    } catch (error) {
-      console.error('Error loading my games:', error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    if (user?.userType === "DEV") {
-      load();
-    }
-  }, [user]);
-
-  if (authLoading) {
-    return <p className="text-gray-500 dark:text-gray-400 px-4 py-8">Carregando…</p>;
-  }
-
-  const handleDeleteGame = async (gameId: string, gameTitle: string) => {
-    // Adicionar confirmação
-    const isConfirmed = window.confirm(
-      `Tem a certeza que quer apagar permanentemente o jogo "${gameTitle}"?\n\nEsta ação não pode ser desfeita e irá removê-lo da biblioteca de todos os usuários.`
-    );
-
-    if (!isConfirmed) return;
-
-    try {
-      setLoading(true); // (Opcional) Mostrar um feedback de loading
-      await apiService.deleteGame(gameId);
-      // Atualizar o estado local para remover o card
-      setItems((prevItems) => prevItems.filter((item) => item.id !== gameId));
-      setTotal((prevTotal) => prevTotal - 1);
-    } catch (error: any) {
-      alert(error?.response?.data?.error?.message || 'Erro ao apagar o jogo');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    items,
+    total,
+    loading,
+    handleDeleteGame
+  } = useMyGames(user, authLoading);
 
   if (!user) return <Navigate to="/login" replace />;
   if (user.userType !== "DEV") return <Navigate to="/" replace />;
