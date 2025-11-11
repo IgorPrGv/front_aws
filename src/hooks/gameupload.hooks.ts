@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../lib/axios";
+import { toast } from "sonner";
 
 export function useGameUpload() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export function useGameUpload() {
     const files = Array.from(e.target.files || []);
     const total = imageFiles.length + files.length;
     if (total > 3) {
-      alert("Você pode enviar no máximo 3 imagens");
+      toast.warning("Você pode enviar no máximo 3 imagens");
       return;
     }
 
@@ -44,7 +45,7 @@ export function useGameUpload() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !description.trim() || imageFiles.length === 0 || !gameFile) {
-      alert("Preencha todos os campos obrigatórios (*): título, descrição, pelo menos uma imagem e o arquivo do jogo.");
+      toast.warning("Preencha todos os campos obrigatórios (*): título, descrição, pelo menos uma imagem e o arquivo do jogo.");
       return;
     }
 
@@ -64,11 +65,11 @@ export function useGameUpload() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      alert("Jogo enviado com sucesso!");
+      toast.success("Jogo enviado com sucesso!");
       navigate("/"); 
     } catch (err: any) {
       const msg = err?.response?.data?.error?.message || "Falha ao enviar jogo";
-      alert(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }

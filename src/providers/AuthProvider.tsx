@@ -35,10 +35,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       setUser(data.user);
-      console.log("✅ [Auth] Login successful:", data.user.username);
+      console.log("[Auth] bem sucedido:", data.user.username);
       return data.user;
     } catch (error: any) {
-      console.error("❌ [Auth] Falha no login."); 
+      console.error("[Auth] Falha no login."); 
       throw error;
     }
   }, []);

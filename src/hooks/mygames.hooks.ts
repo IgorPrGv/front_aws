@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../lib/api.service';
 import type { Game, User } from '../types/models';
+import { toast } from 'sonner';
 
 export function useMyGames(user: User | null, authLoading: boolean) {
   const [items, setItems] = useState<Game[]>([]);
@@ -17,6 +18,7 @@ export function useMyGames(user: User | null, authLoading: boolean) {
       setTotal(data.total);
     } catch (error) {
       console.error('Error loading my games:', error);
+      toast.error("Falha ao carregar seus jogos.");
       setItems([]);
       setTotal(0);
     } finally {
@@ -35,19 +37,15 @@ export function useMyGames(user: User | null, authLoading: boolean) {
     }
   }, [user, authLoading, load]); 
 
-  const handleDeleteGame = useCallback(async (gameId: string, gameTitle: string) => {
-    const isConfirmed = window.confirm(
-      `Tem a certeza que quer apagar permanentemente o jogo "${gameTitle}"?\n\nEsta ação não pode ser desfeita e irá removê-lo da biblioteca de todos os usuários.`
-    );
-
-    if (!isConfirmed) return;
+  const handleDeleteGame = useCallback(async (gameId: string) => {
 
     try {
       await apiService.deleteGame(gameId);
       setItems((prevItems) => prevItems.filter((item) => item.id !== gameId));
       setTotal((prevTotal) => prevTotal - 1);
+      toast.success("Jogo apagado");
     } catch (error: any) {
-      alert(error?.response?.data?.error?.message || 'Erro ao apagar o jogo');
+      toast.error(error?.response?.data?.error?.message || 'Erro ao apagar o jogo');
     }
   }, []); 
 

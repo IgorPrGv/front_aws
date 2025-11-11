@@ -3,6 +3,7 @@
 import { useAuth } from "../providers/AuthProvider";
 import { apiService } from "../lib/api.service";
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 
 export function useGameLibrary() {
   const { user } = useAuth();
@@ -13,16 +14,16 @@ export function useGameLibrary() {
       return;
     }
     if (user.userType !== 'PLAYER') {
-      alert("Apenas Jogadores podem adicionar jogos à biblioteca.");
+      toast.error("Apenas Jogadores podem adicionar jogos à biblioteca.");
       return;
     }
 
     try {
       await apiService.addToLibrary(gameId);
-      alert("Adicionado à sua biblioteca!");
+      toast.success("Adicionado à sua biblioteca!");
     } catch (error: any) {
       const msg = error?.response?.data?.error?.message || 'Erro ao adicionar';
-      alert(msg);
+      toast.error(msg);
     }
   };
 
@@ -61,8 +62,10 @@ export function useMyDownloads() {
     try {
       await apiService.removeFromLibrary(downloadId);
       setItems((prev) => prev.filter((r) => r.id !== downloadId));
+      toast.success("Jogo removido da biblioteca.");
     } catch (error: any) {
-      alert(error?.response?.data?.error?.message || 'Erro ao remover');
+      const msg = error?.response?.data?.error?.message || 'Erro ao remover';
+      toast.error(msg);
     }
   };
 

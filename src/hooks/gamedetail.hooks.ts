@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/hooks/gamedetail.hooks.ts
 import { useEffect, useState, useCallback } from "react";
+import { toast } from "sonner";
 import { apiService } from "../lib/api.service";
 import type { Game, Review, User } from "../types/models";
 
@@ -78,9 +80,14 @@ export function useGameDetail(gameId: string | undefined, user: User | null) {
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !gameId) return;
-    const newReview = await apiService.createReview(gameId, newComment.trim());
-    setReviews(prev => [newReview, ...prev]);
-    setNewComment("");
+    try {
+      const newReview = await apiService.createReview(gameId, newComment.trim());
+      setReviews(prev => [newReview, ...prev]);
+      setNewComment("");
+      toast.success("Comentário postado!"); 
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error?.message || "Erro ao postar comentário"); 
+    }
   };
 
   return {
